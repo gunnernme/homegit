@@ -1,0 +1,2 @@
+[servers]
+george ansible_ssh_user=eolson ansible_ssh_password=eao123

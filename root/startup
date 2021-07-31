@@ -1,0 +1,42 @@
+mkdir /run/sendsigs.omit.d 2>/dev/null
+
+servicefile=/tmp/seO$$
+serviceerrs=/tmp/seE$$
+mylist="cron ssh postfix procps rpcbind nfs-common rsync"
+
+service --status-all > $servicefile 2>$serviceerrs
+
+running=$(grep + $servicefile|awk '{print $4;}')
+stopped=$(grep - $servicefile|awk '{print $4;}')
+unknown=$(grep '\?' $serviceerrs|awk '{print $4;}')
+
+rm -f $servicefile $serviceerrs
+
+for service in $mylist
+do
+  echo $service
+  echo $running|grep $service   > /dev/null 2>&1 && { \
+      echo $service running ; \
+      service $service stop ; \
+      echo $service stop ; \
+      service $service start ; \
+      echo $service started ; \
+    } || { echo $stopped|grep $service > /dev/null 2>&1  && { \
+            echo $service already stopped ; \
+            service $service start ; \
+            echo $service started ; \
+            } || { echo $unknown|grep $service  > /dev/null 2>&1 && \
+                    echo $service status is unknown ||
+                    echo $service is not installed ; }  } 
+  echo
+done
+
+mount -a
+
+ip_address=$(ip a | grep inet|grep eth0 | awk '{print $2;}' | cut -d/ -f1)
+echo "inet is $ip_address"
+cat /mnt/c/windows/System32/drivers/etc/hosts  | sed -e "s/172.[0-9]*.[0-9]*.[0-9]*/$ip_address/" > /etc/hosts
+
+hostname ubu-george
+apachectl start
+bash /etc/init.d/git start

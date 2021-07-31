@@ -1,0 +1,44 @@
+---
+  - name: pb1
+    hosts: "{{target}}"
+    vars:
+      list:
+        - apache2
+        - apache2-utils
+        - nginx
+        - openssl
+        - ansible
+        - ansible-lint
+        - rpcbind
+        - net-tools
+        - procps
+        - postfix
+        - pylint
+        - python3.9
+        - python3-pip
+        - python3-virtualenv
+        - subversion
+        - git
+        - x11-xserver-utils
+        - sshpass
+
+      piplist:
+        - flask
+        - urllib3
+        - blinkpy
+        - pyyaml
+        - blinker
+        - flasker
+        - pytz
+        - django
+        - ansible
+        - ansible-lint
+
+    tasks:
+      - name: install stuff
+        become: yes
+        package: name={{list}} state=latest update_cache=true
+
+      - name: install pip stuff
+        become: no
+        pip: virtualenv=/home/eolson/venv umask=022 name={{piplist}}
