@@ -30,6 +30,8 @@
         - blinker
         - flasker
         - pytz
+        - pathlib
+        - tzlocal
         - django
         - ansible
         - ansible-lint

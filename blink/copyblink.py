@@ -54,6 +54,7 @@ class vidfile:
         datepart = datepart + '+' + self.utcoffset
         filestring = self.camname + '-' + datepart + self.ext
         self.filetime = datetime.strptime(datepart, "%Y-%m-%dt%H-%M-%S%z")
+        self.year_month_string = datepart[0:7]
         local_timezone = tzlocal.get_localzone()
         self.localfiletime = self.filetime.replace(tzinfo=pytz.utc).astimezone(local_timezone)
 
@@ -94,6 +95,9 @@ class vidfile:
 
       return mystr
 
+    def year_month(self):
+      return self.year_month_string
+
 
 def initialize_cams(creds):
     blink = Blink()
@@ -114,6 +118,10 @@ def cameras(blink):
 
 def download_videos(blink, camera, since, download_dir):
     debugflag = False
+    try:
+      os.mkdir(download_dir)
+    except FileExistsError:
+      pass
     blink.download_videos(download_dir, since=since,  camera=camera, debug=debugflag)
 
 def modify_videos(download_dir, display_dir):
@@ -129,7 +137,12 @@ def modify_videos(download_dir, display_dir):
 
     for x in flist:
       orig = download_dir + '/' + x.origfilename()
-      new = display_dir + '/' + x.localfilename()
+      newdir = display_dir + '/' + x.year_month()
+      new = newdir + '/' + x.localfilename()
+      try:
+        os.mkdir(newdir)
+      except FileExistsError:
+        pass
       lft = x.localfiletime.timestamp()
       if not os.path.isfile(display_dir + "/" + new):
         copyfile(orig, new)

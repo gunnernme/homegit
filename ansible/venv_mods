@@ -1,6 +1,6 @@
 source ../venv/bin/activate
 list1="flask urllib3 blinkpy"
-list2="pyyaml blinker flasker pytz" 
+list2="pyyaml blinker flasker pytz pathlib tzlocal" 
 
 list="$list1 $list2"
 
