@@ -16,6 +16,10 @@ Credsfile = "/home/eolson/creds/blinkcreds_eolson"
 Download_root = '/mnt/z'
 Since = "05/01/2021"
 
+#
+#
+#
+
 class Mycamera:
     def __init__(self, camera):
         self.camera = camera
