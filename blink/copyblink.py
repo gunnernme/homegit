@@ -54,9 +54,14 @@ class vidfile:
         datepart = datepart + '+' + self.utcoffset
         filestring = self.camname + '-' + datepart + self.ext
         self.filetime = datetime.strptime(datepart, "%Y-%m-%dt%H-%M-%S%z")
-        self.year_month_string = datepart[0:7]
         local_timezone = tzlocal.get_localzone()
         self.localfiletime = self.filetime.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+        local_offset = self.localfiletime.strftime("%z")
+        localdate_string =  self.localfiletime.strftime("%Y-%m-%dt%H-%M-%S")
+        self.localtime_filename = self.camname + '-' + localdate_string + \
+          local_offset[0] + local_offset[1:3] + '-' + local_offset[3:5] + \
+          '.' + self.ext
+        self.year_month_string = self.localfiletime.strftime("%Y-%m")
 
     def camname(self):
       return self.camname
@@ -80,13 +85,7 @@ class vidfile:
       return self.dirname
 
     def localfilename(self):
-      local_offset = self.localfiletime.strftime("%z")
-      localtime_filename = self.camname + '-' + \
-        self.localfiletime.strftime("%Y-%m-%dt%H-%M-%S") + \
-        local_offset[0] + local_offset[1:3] + '-' + local_offset[3:5] + \
-        '.' + self.ext
-
-      return localtime_filename
+      return self.localtime_filename
 
     def __str__(self):
       mystr = self.filename + ':' + \
