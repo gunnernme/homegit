@@ -142,11 +142,11 @@ def camdump(cam):
 def main():
     blink = initialize_cams(Credsfile)
     cam_list = cameras(blink)
-    for x in cam_list:
-        pprint(camdump(x))
+    #for x in cam_list:
+        #pprint(camdump(x))
     for struct in cam_list:
         camera = struct['name']
-        print('download videos for ' + camera)
+        #print('download videos for ' + camera)
         old_dld = "{}/{}".format(Download_root, camera)
         test_dld = "{}/{}/{}".format(Download_root, 'test', camera)
         download_dir = "{}/{}/{}".format(Download_root, "download", camera)
