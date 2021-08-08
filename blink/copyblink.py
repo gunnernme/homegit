@@ -157,6 +157,7 @@ def camdump(cam):
 
 def main():
     blink = initialize_cams(Credsfile)
+    os.nice(5)
     cam_list = cameras(blink)
     #for x in cam_list:
         #pprint(camdump(x))
