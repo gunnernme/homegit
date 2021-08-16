@@ -138,10 +138,13 @@ def modify_videos(download_dir, display_dir):
       orig = download_dir + '/' + x.origfilename()
       newdir = display_dir + '/' + x.year_month()
       new = newdir + '/' + x.localfilename()
-      try:
-        os.mkdir(newdir)
-      except FileExistsError:
-        pass
+      if not os.path.isdir(newdir):
+        if os.path.exists(newdir):
+          os.unlink(newdir)
+        try:
+          os.mkdir(newdir)
+        except FileExistsError:
+          pass
       lft = x.localfiletime.timestamp()
       if not os.path.isfile(display_dir + "/" + new):
         copyfile(orig, new)
