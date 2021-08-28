@@ -1,4 +1,5 @@
 import os
+import sys
 from blinkpy.blinkpy import Blink
 from blinkpy.auth import Auth
 from blinkpy.helpers.util import json_load
@@ -9,6 +10,7 @@ import pytz
 import tzlocal
 import pathlib
 import time
+import logging
 from shutil import copyfile
 #import camera
 
@@ -100,10 +102,13 @@ class vidfile:
 
 def initialize_cams(creds):
     blink = Blink()
-    auth = Auth(json_load(creds))
-    blink.auth = auth
-    blink.start()
-    blink.refresh()
+    try: 
+      auth = Auth(json_load(creds))
+      blink.auth = auth
+      blink.start()
+      blink.refresh()
+    except:
+      pass
     return blink
 
 def cameras(blink):
@@ -159,6 +164,10 @@ def camdump(cam):
     return mycam
 
 def main():
+    filename = "{}.log".format(os.path.basename(sys.argv[0]))
+    logging.basicConfig(filename=filename, level=logging.DEBUG)
+    logging.info('Started')
+
     blink = initialize_cams(Credsfile)
     os.nice(5)
     cam_list = cameras(blink)
@@ -177,6 +186,8 @@ def main():
         #download_videos(blink, camera, Since, old_dld)
 
         modify_videos(download_dir, old_dld)
+
+    logging.info('Finished')
 
 main()
 
