@@ -21,6 +21,9 @@
         - git
         - x11-xserver-utils
         - sshpass
+        - xfce4 
+        - xfce4-goodies
+        - tightvncserver
 
       piplist:
         - flask
@@ -44,3 +47,17 @@
       - name: install pip stuff
         become: no
         pip: virtualenv=/home/eolson/venv umask=022 name={{piplist}}
+
+      - name: sysctl stuff keepalive intvl
+        become: yes
+        ansible.posix.sysctl:
+          name: net.ipv4.tcp_keepalive_intvl
+          value: '60'
+
+      - name: sysctl stuff keepalive probes
+        become: yes
+        ansible.posix.sysctl: name=net.ipv4.tcp_keepalive_probes value='5'
+
+      - name: sysctl stuff keepalive time
+        become: yes
+        ansible.posix.sysctl: name=net.ipv4.tcp_keepalive_time value='300'
