@@ -2,7 +2,7 @@ mkdir /run/sendsigs.omit.d 2>/dev/null
 
 servicefile=/tmp/seO$$
 serviceerrs=/tmp/seE$$
-mylist="cron ssh postfix procps rpcbind nfs-common rsync"
+mylist="cron ssh postfix procps rpcbind nfs-common rsync vncserver"
 
 service --status-all > $servicefile 2>$serviceerrs
 
@@ -40,3 +40,4 @@ cat /mnt/c/windows/System32/drivers/etc/hosts  | sed -e "s/172.[0-9]*.[0-9]*.[0-
 hostname ubu-george
 apachectl start
 bash /etc/init.d/git start
+service nfs-common restart
