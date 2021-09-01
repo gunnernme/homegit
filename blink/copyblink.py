@@ -143,15 +143,21 @@ def modify_videos(download_dir, display_dir):
       orig = download_dir + '/' + x.origfilename()
       newdir = display_dir + '/' + x.year_month()
       new = newdir + '/' + x.localfilename()
+      logging.info("orig={} new={}".format(orig, new))
       if not os.path.isdir(newdir):
+        logging.info("{} is not a dir".format(newdir))
         if os.path.exists(newdir):
+          logging.info("{} does exist".format(newdir))
           os.unlink(newdir)
         try:
+          logging.info("{} mkdir".format(newdir))
           os.mkdir(newdir)
         except FileExistsError:
           pass
       lft = x.localfiletime.timestamp()
-      if not os.path.isfile(display_dir + "/" + new):
+      checkfile = newdir + "/" + x.localfilename()
+      if not os.path.isfile(checkfile):
+        logging.info("{} is not a file".format(checkfile))
         copyfile(orig, new)
         os.utime(new, (lft, lft))
 
@@ -165,7 +171,7 @@ def camdump(cam):
 
 def main():
     filename = "{}.log".format(os.path.basename(sys.argv[0]))
-    logging.basicConfig(filename=filename, level=logging.DEBUG)
+    logging.basicConfig(filename=filename, level=logging.INFO)
     logging.info('Started')
 
     blink = initialize_cams(Credsfile)
@@ -182,7 +188,9 @@ def main():
         os.makedirs(old_dld, exist_ok = True)
         os.makedirs(download_dir, exist_ok = True)
 
+        logging.info('before download')
         download_videos(blink, camera, Since, download_dir)
+        logging.info('after  download')
         #download_videos(blink, camera, Since, old_dld)
 
         modify_videos(download_dir, old_dld)
