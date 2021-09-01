@@ -1,0 +1,223 @@
+#! /usr/bin/perl -w 
+
+#use POSIX;
+
+my $tmp;
+($tmp)=($0 =~ /(.*)[\\\/]/);
+$tmp = '.' if (!$tmp);
+my @paths=(
+    "$tmp",
+    "$ENV{HOME}/perlbin",
+    );
+	
+unshift( @INC, @paths);
+
+require "tools.pm";
+
+my $title;
+my $node;
+my $path=$ENV{PATH};
+my $xterm=$ENV{XTERM}?$ENV{XTERM}:"rxvt";
+my $xtermpath;
+my $geom=$ENV{GEOM}?$ENV{GEOM}:"85x35";
+my $fg=$ENV{FG}?$ENV{FG}:"black";
+my $bg=$ENV{BG}?$ENV{BG}:"white";
+my $font=$ENV{FONT}?$ENV{FONT}:"10x20";
+my $cmd=$ENV{CMD}?$ENV{CMD}:"bash";
+my $cmdargs=$ENV{CMDARGS}?$ENV{CMDARGS}:"--login";
+my $sb=$ENV{SB}?$ENV{SB}:"-sb";
+my $rightbar=$ENV{RB};
+my $iconic=$ENV{ICONIC};
+my $screen=$ENV{SCREEN}?$ENV{SCREEN}:"0.0";
+my $pixmap=$ENV{PIXMAP}?"$ENV{PIXMAP}":"";
+my $display=$ENV{DISPLAY};
+my $revision='$Revision: 1.13 $';
+my $nohome=0;
+my ($uname, $osname, $mach, $osver, $junk);
+
+
+my $version='$Header: /home/eolson/perlbin/RCS/myxterm,v 1.13 2006/09/25 02:27:03 eolson Exp eolson $';
+
+
+
+if ($ARGV[0] && ($ARGV[0] =~ /-display/) )
+    {
+    $display=($ARGV[1]?$ARGV[1]:":0");
+    }
+
+my $prf="$ENV{HOME}/.profile";
+my $profile_version="unknown";
+my $prc=open(PRC, "<$prf");
+if (!$prc) { print STDERR "Can't open $prf: $!\n"; exit 1;}
+while(<PRC>)
+    {
+    if (/profile_version=/)
+	{
+	($profile_version) = ($_ =~ /.*,v\s+([\d\.]+).*/);
+	}
+    }
+close(PRC);
+
+$nohome=1 if ($ARGV[0] && ($ARGV[0] =~ /\+h/)) ;
+chdir ($ENV{HOME}?$ENV{HOME}:"/") unless $nohome;
+if ($^O =~ /freebsd/i) {
+    $uname=`/usr/bin/uname -a`;
+}
+else  {
+    $uname=`/bin/uname -a`;
+}
+chomp($uname);
+($osname, $mach, $osver, $junk)=split /\s+/, $uname;
+if ($ENV{LD_LIBRARY_PATH})
+    {
+    $ENV{LD_LIBRARY_PATH}="/usr/local/lib:$ENV{LD_LIBRARY_PATH}" if ($osver =~ /8/);
+    }
+else
+    {
+    $ENV{LD_LIBRARY_PATH}="/usr/local/lib" if ($osver =~ /8/);
+    }
+
+#sub dumparr(@)
+    #{
+	#my $ref=shift;
+	#my @arr=@{$ref};
+#
+    #print STDERR "command: ". join ' ', @arr . "\n";
+    #}
+
+sub dumparr(@)
+    {
+	my $tmp;
+    print STDERR "command:";
+    foreach $tmp(@_)
+	{
+	print STDERR " $tmp";
+	}
+    print STDERR "\n"
+    }
+
+$path="/bin:/usr/bin:/etc:/sbin:/usr/sbin:/usr/X11R6/bin:/usr/local/bin:/usr/contrib/bin:/usr/sfw/bin:/opt/sfw/bin:/usr/openwin/bin:$ENV{HOME}/perlbin:$ENV{HOME}/linuxbin:$ENV{HOME}/sparcbin:$ENV{HOME}/cygbin:$ENV{HOME}/shellbin:";
+
+$ENV{PATH}=$path;
+
+($system)=(`uname -s`);
+if ($system =~ /freebsd/i) {
+    $path="/bin:/usr/bin:/etc:/sbin:/usr/sbin:/usr/X11R6/bin:/usr/local/bin:/usr/contrib/bin:/usr/sfw/bin:/opt/sfw/bin:/usr/openwin/bin:$ENV{HOME}/perlbin:$ENV{HOME}/bsdbin:$ENV{HOME}/shellbin:";
+    $ENV{PATH} = $path;
+}
+
+($node)=(`uname -n`);
+($rel)=(`uname -r`);
+chomp($system);
+chomp($node);
+chomp($rel);
+($revision)=($revision =~ /.*:\s*([0-9\.]+)/);
+my $myid=$<;
+my @stuff=getpwuid($myid);
+my $iam;
+if ($ARGV[0] && $ARGV[0] != '' && ($ARGV[0] !~ /^-/))
+    {
+    $iam=$ARGV[0];
+    }
+else
+    {
+	my $gecos=$stuff[6];
+    if ($gecos =~ /,/)
+	{
+	@junk=split ',' , $gecos;
+	foreach my $tmpiam (@junk)
+	    {
+            if ($tmpiam && $tmpiam != "") {
+                ($iam)=($tmpiam =~ /U-(.*)/) if ($tmpiam =~ /^U-/);
+                $iam = lc($iam);
+                }
+            }
+	}
+    $iam=lc($stuff[0]) unless ($iam);
+    }
+
+$title="$iam\@$node: $system $rel myxterm v$revision .profile v$profile_version";
+
+sub findpath($$)
+    {
+	my $what=shift;
+	my $p=shift;
+	my @arr;
+	my $tmp;
+
+    @arr=split(':', $p);
+    foreach $tmp(@arr)
+	{
+	    my $lp="$tmp/$what";
+	return $lp if ( -x $lp );
+	}
+    return undef;
+    }
+
+sub getdisplay() {
+	my ($addr, $line);
+	my $osmin;
+
+    ($osmin)=(`uname -r`);
+    chomp($osmin);
+    print STDERR "-> osmin $osmin\n";
+    #print "osmin=\"$osmin\"\n";
+    if ($osmin =~ /5.6/) {
+	$line=(`who -u|grep \$LOGNAME`);
+    }
+    else {
+	$line=(`who -m`);
+    }
+    $line |= "(localhost:0)";
+    chomp($line);
+    ($addr)=($line =~ /\((.*)\)/);
+    ($addr)=($addr =~ /(.*):.*/) if ($addr =~ /:/);
+    $addr |= "localhost";
+    $display="$addr:0.0" if ($addr);
+
+    $display |= "localhost:0.0" if (!$display);
+    return $display;
+    }
+
+if (!$rightbar)
+    {
+    $rightbar="-sr"; # if ($xterm =~ /rxvt/ && $system !~ /freebsd/i);
+    $rightbar="-rightbar" if ($xterm =~ /xterm/);
+    $rightbar="" if ($xterm =~ /xterm/ && ($osver =~ /5.7/) );
+    }
+$display=getdisplay if (!$display);
+@cmd=();
+$xtermpath=findpath($xterm, $path);
+die ("Cannot find \"$xterm\" in path \"$ENV{PATH}\"\n") if (!$xtermpath);
+push @cmd, (findpath($xterm, $path));
+if ($xterm !~ /xfce4|gnome-terminal/) {
+    push @cmd, ("-display", $display);
+    push @cmd, ("-pixmap", $pixmap) if ($pixmap);
+    push @cmd, ("-geometry", $geom);
+    push @cmd, ("-title", $title);
+    push @cmd, ("-fg", $fg);
+    push @cmd, ("-bg", $bg);
+    push @cmd, ("-font", $font);
+    push @cmd, ("-n", $title);
+    push @cmd, ($sb);
+    push @cmd, ("-iconic") if ($iconic);
+    push @cmd, ($rightbar) if ($rightbar);
+    push @cmd, ("-e", $cmd, $cmdargs);
+    push @cmd, (());
+}
+
+if ($ARGV[0] && ($ARGV[0] =~ /-(v|h)/) )
+    {
+    version(tools::get_version());
+    version($version);
+    dumparr(@cmd);
+    exit(1);
+    }
+
+if (fork() == 0)
+    {
+    #warn("Could not set pgrp: $!\n") unless POSIX::setsid();
+    warn("Could not set pgrp: $!\n") unless setpgrp();
+    exec @cmd;
+    }
+exit 0;
