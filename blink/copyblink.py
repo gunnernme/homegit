@@ -11,6 +11,7 @@ import tzlocal
 import pathlib
 import time
 import logging
+from logging import info,debug
 from shutil import copyfile
 #import camera
 
@@ -143,21 +144,21 @@ def modify_videos(download_dir, display_dir):
       orig = download_dir + '/' + x.origfilename()
       newdir = display_dir + '/' + x.year_month()
       new = newdir + '/' + x.localfilename()
-      logging.info("orig={} new={}".format(orig, new))
+      debug("orig={} new={}".format(orig, new))
       if not os.path.isdir(newdir):
-        logging.info("{} is not a dir".format(newdir))
+        info("{} is not a dir".format(newdir))
         if os.path.exists(newdir):
-          logging.info("{} does exist".format(newdir))
+          info("{} does exist".format(newdir))
           os.unlink(newdir)
         try:
-          logging.info("{} mkdir".format(newdir))
+          info("{} mkdir".format(newdir))
           os.mkdir(newdir)
         except FileExistsError:
           pass
       lft = x.localfiletime.timestamp()
       checkfile = newdir + "/" + x.localfilename()
       if not os.path.isfile(checkfile):
-        logging.info("{} is not a file".format(checkfile))
+        info("Copy {} to {}".format(orig, new))
         copyfile(orig, new)
         os.utime(new, (lft, lft))
 
@@ -172,13 +173,12 @@ def camdump(cam):
 def main():
     filename = "{}.log".format(os.path.basename(sys.argv[0]))
     logging.basicConfig(filename=filename, level=logging.INFO)
-    logging.info('Started')
+    info('Started')
 
     blink = initialize_cams(Credsfile)
     os.nice(5)
     cam_list = cameras(blink)
-    #for x in cam_list:
-        #pprint(camdump(x))
+
     for struct in cam_list:
         camera = struct['name']
         #print('download videos for ' + camera)
@@ -188,14 +188,14 @@ def main():
         os.makedirs(old_dld, exist_ok = True)
         os.makedirs(download_dir, exist_ok = True)
 
-        logging.info('before download')
+        info('before download for {}'.format(camera))
         download_videos(blink, camera, Since, download_dir)
-        logging.info('after  download')
+        info('after  download')
         #download_videos(blink, camera, Since, old_dld)
 
         modify_videos(download_dir, old_dld)
 
-    logging.info('Finished')
+    info('Finished')
 
 main()
 
