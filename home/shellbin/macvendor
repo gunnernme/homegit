@@ -1,0 +1,6 @@
+for arg
+do
+  #res=$(curl -s --data-urlencode "mac=$arg" http://api.macvendors.com)
+  res=$(curl -s https://api.macvendors.com/"$arg")
+  echo "$arg = $res"
+done
