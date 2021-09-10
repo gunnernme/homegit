@@ -65,6 +65,7 @@ class vidfile:
           local_offset[0] + local_offset[1:3] + '-' + local_offset[3:5] + \
           '.' + self.ext
         self.year_month_string = self.localfiletime.strftime("%Y-%m")
+        self.month_day_string = self.localfiletime.strftime("%m-%d")
 
     def camname(self):
       return self.camname
@@ -99,6 +100,9 @@ class vidfile:
 
     def year_month(self):
       return self.year_month_string
+
+    def month_day(self):
+      return self.month_day_string
 
 
 def initialize_cams(creds):
@@ -142,7 +146,7 @@ def modify_videos(download_dir, display_dir):
 
     for x in flist:
       orig = download_dir + '/' + x.origfilename()
-      newdir = display_dir + '/' + x.year_month()
+      newdir = display_dir + '/' + x.year_month() + '/' + x.month_day()
       new = newdir + '/' + x.localfilename()
       debug("orig={} new={}".format(orig, new))
       if not os.path.isdir(newdir):
@@ -173,6 +177,7 @@ def camdump(cam):
 def main():
     filename = "{}.log".format(os.path.basename(sys.argv[0]))
     logging.basicConfig(filename=filename, level=logging.INFO)
+    #logging.basicConfig(level=logging.INFO)
     info('Started')
 
     blink = initialize_cams(Credsfile)
