@@ -5,6 +5,7 @@ from blinkpy.auth import Auth
 from blinkpy.helpers.util import json_load
 from pprint import pprint,pformat
 from datetime import datetime
+import re
 import dateutil.parser
 import pytz
 import tzlocal
@@ -22,6 +23,40 @@ Since = "05/01/2021"
 #
 #
 #
+
+class Netblink:
+    def initialize_cams(self, creds):
+        blink = Blink()
+        try: 
+          auth = Auth(json_load(creds))
+          blink.auth = auth
+          blink.start()
+          blink.refresh()
+        except:
+          pass
+        return blink
+
+    def __init__(self, credsfile):
+      self.blink = None
+      self.verbose = None
+      self.logfile = None
+      self.credsfile = credsfile
+      os.nice(5)
+
+      self.verbose = os.environ.get('VERBOSE', None)
+      if self.verbose and not re.match(r'(f|0).*', self.verbose.lower()):
+        print("Here", file=sys.stderr)
+        log = os.environ.get('LOGFILE', None)
+        if not log:
+          self.logfile = "{}.log".format(os.path.basename(sys.argv[0]))
+          logging.basicConfig(filename=self.logfile, level=logging.INFO)
+        else:
+          if re.match(r'stderr',log.lower()):
+            logging.basicConfig(level=logging.INFO)
+
+      info('Started')
+      self.blink = self.initialize_cams(self.credsfile)
+
 
 class Mycamera:
     def __init__(self, camera):
@@ -105,17 +140,6 @@ class vidfile:
       return self.month_day_string
 
 
-def initialize_cams(creds):
-    blink = Blink()
-    try: 
-      auth = Auth(json_load(creds))
-      blink.auth = auth
-      blink.start()
-      blink.refresh()
-    except:
-      pass
-    return blink
-
 def cameras(blink):
     mylist = []
 
@@ -175,14 +199,8 @@ def camdump(cam):
     return mycam
 
 def main():
-    filename = "{}.log".format(os.path.basename(sys.argv[0]))
-    logging.basicConfig(filename=filename, level=logging.INFO)
-    #logging.basicConfig(level=logging.INFO)
-    info('Started')
-
-    blink = initialize_cams(Credsfile)
-    os.nice(5)
-    cam_list = cameras(blink)
+    instance = Netblink(Credsfile)
+    cam_list = cameras(instance.blink)
 
     for struct in cam_list:
         camera = struct['name']
@@ -194,7 +212,7 @@ def main():
         os.makedirs(download_dir, exist_ok = True)
 
         info('before download for {}'.format(camera))
-        download_videos(blink, camera, Since, download_dir)
+        download_videos(instance.blink, camera, Since, download_dir)
         info('after  download')
         #download_videos(blink, camera, Since, old_dld)
 
