@@ -37,9 +37,9 @@ class Netblink:
         return blink
 
     def we_are_logging(self):
-      return self.verbose and not re.match(r'(f|0).*', self.verbose.lower())
+      return self.verbose is None or not re.match(r'(f|0).*', self.verbose.lower())
 
-    def setup_log_file():
+    def setup_log_file(self):
       log = os.environ.get('LOGFILE', None)
       if not log:
         self.logfile = "{}.log".format(os.path.basename(sys.argv[0]))
