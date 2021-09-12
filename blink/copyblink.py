@@ -36,6 +36,18 @@ class Netblink:
           pass
         return blink
 
+    def we_are_logging(self):
+      return self.verbose and not re.match(r'(f|0).*', self.verbose.lower())
+
+    def setup_log_file():
+      log = os.environ.get('LOGFILE', None)
+      if not log:
+        self.logfile = "{}.log".format(os.path.basename(sys.argv[0]))
+        logging.basicConfig(filename=self.logfile, level=logging.INFO)
+      else:
+        if re.match(r'stderr',log.lower()):
+          logging.basicConfig(level=logging.INFO)
+
     def __init__(self, credsfile):
       self.blink = None
       self.verbose = None
@@ -44,15 +56,10 @@ class Netblink:
       os.nice(5)
 
       self.verbose = os.environ.get('VERBOSE', None)
-      if self.verbose and not re.match(r'(f|0).*', self.verbose.lower()):
-        print("Here", file=sys.stderr)
-        log = os.environ.get('LOGFILE', None)
-        if not log:
-          self.logfile = "{}.log".format(os.path.basename(sys.argv[0]))
-          logging.basicConfig(filename=self.logfile, level=logging.INFO)
-        else:
-          if re.match(r'stderr',log.lower()):
-            logging.basicConfig(level=logging.INFO)
+      #
+      # it's going to do logging unless explicitly told not to
+      if self.we_are_logging():
+        self.setup_log_file()
 
       info('Started')
       self.blink = self.initialize_cams(self.credsfile)
