@@ -64,6 +64,22 @@ class Netblink:
       info('Started')
       self.blink = self.initialize_cams(self.credsfile)
 
+    def cameras(self):
+        mylist = []
+
+        for name, camera in self.blink.cameras.items():
+            item = Mycamera(camera)
+            mylist.append(item.camera.attributes)
+
+        return mylist
+
+    def download_videos(self, camera, since, download_dir):
+        debugflag = False
+        try:
+          os.mkdir(download_dir)
+        except FileExistsError:
+          pass
+        self.blink.download_videos(download_dir, since=since,  camera=camera, debug=debugflag)
 
 class Mycamera:
     def __init__(self, camera):
@@ -146,24 +162,6 @@ class vidfile:
     def month_day(self):
       return self.month_day_string
 
-
-def cameras(blink):
-    mylist = []
-
-    for name, camera in blink.cameras.items():
-        item = Mycamera(camera)
-        mylist.append(item.camera.attributes)
-
-    return mylist
-
-def download_videos(blink, camera, since, download_dir):
-    debugflag = False
-    try:
-      os.mkdir(download_dir)
-    except FileExistsError:
-      pass
-    blink.download_videos(download_dir, since=since,  camera=camera, debug=debugflag)
-
 def modify_videos(download_dir, display_dir):
     filename = '/mnt/z/window/window-2021-06-09t11-21-14-00-00.mp4'
     flist = []
@@ -207,7 +205,7 @@ def camdump(cam):
 
 def main():
     instance = Netblink(Credsfile)
-    cam_list = cameras(instance.blink)
+    cam_list = instance.cameras()
 
     for struct in cam_list:
         camera = struct['name']
@@ -219,7 +217,7 @@ def main():
         os.makedirs(download_dir, exist_ok = True)
 
         info('before download for {}'.format(camera))
-        download_videos(instance.blink, camera, Since, download_dir)
+        instance.download_videos(camera, Since, download_dir)
         info('after  download')
         #download_videos(blink, camera, Since, old_dld)
 
