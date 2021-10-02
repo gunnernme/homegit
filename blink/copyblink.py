@@ -175,19 +175,21 @@ def modify_videos(download_dir, display_dir):
 
     for x in flist:
       orig = download_dir + '/' + x.origfilename()
-      newdir = display_dir + '/' + x.year_month() + '/' + x.month_day()
+      monthdir = display_dir + '/' + x.year_month() 
+      newdir = monthdir + '/' + x.month_day()
       new = newdir + '/' + x.localfilename()
       debug("orig={} new={}".format(orig, new))
-      if not os.path.isdir(newdir):
-        info("{} is not a dir".format(newdir))
-        if os.path.exists(newdir):
-          info("{} does exist".format(newdir))
-          os.unlink(newdir)
-        try:
-          info("{} mkdir".format(newdir))
-          os.mkdir(newdir)
-        except FileExistsError:
-          pass
+      for dir in [monthdir, newdir]:
+        if not os.path.isdir(dir):
+          info("{} is not a dir".format(dir))
+          if os.path.exists(dir):
+            info("{} does exist".format(dir))
+            os.unlink(dir)
+          try:
+            info("{} mkdir".format(dir))
+            os.mkdir(dir)
+          except FileExistsError:
+            pass
       lft = x.localfiletime.timestamp()
       checkfile = newdir + "/" + x.localfilename()
       if not os.path.isfile(checkfile):
