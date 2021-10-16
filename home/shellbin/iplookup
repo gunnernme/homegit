@@ -1,0 +1,1 @@
+curl -s http://api.ipstack.com/$1?access_key=60e5fd796be39a1cd777fa662f131018|python3 ~eolson/shellbin/iplookup.py
