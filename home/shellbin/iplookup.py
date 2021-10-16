@@ -23,12 +23,13 @@ def get_info(address) :
   else:
     loc = "{}, {}/{}".format(city, region_name, country_name)
 
-  print("{}: {} ({}, {})".format(continent_name, loc, latitude[0:6], longitude[0:6]))
+  print("{}: {}- {} ({}, {})".format(address, continent_name, loc, latitude[0:6], longitude[0:6]))
 
 
 
 def main():
-  get_info(sys.argv[1])
+  for x in argv:
+    get_info(x)
 
 
 main()
