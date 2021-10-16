@@ -28,7 +28,7 @@ def get_info(address) :
 
 
 def main():
-  for x in argv:
+  for x in sys.argv:
     get_info(x)
 
 
