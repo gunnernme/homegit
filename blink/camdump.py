@@ -200,38 +200,32 @@ def modify_videos(download_dir, display_dir):
 def camdump(cam):
     mycam = {}
     mycam['battery_status'] = cam['battery']
-    mycam['battery_voltage'] = cam['battery_voltage']
-    mycam['temperature'] = cam['temperature']
+    mycam['battery_voltage'] = str(cam['battery_voltage'])
+    mycam['temperature'] = str(cam['temperature']) + "F/" + str(cam['temperature_c']) + "C"
+    mycam['serial'] = cam['serial']
+    mycam['wifi_strength'] = str(cam['wifi_strength'])
+    mycam['motion_detected'] = str(cam['motion_detected'])
+    mycam['motion_enabled'] = str(cam['motion_enabled'])
     mycam['name'] = cam['name']
     return mycam
-
-def notify_user(camera):
-    pass
 
 def main():
     instance = Netblink(Credsfile)
     cam_list = instance.cameras()
-    Minvoltage = 125
 
     for struct in cam_list:
         camera = struct['name']
-        if struct['battery'].lower() != "OK" or struct['battery_voltage'] < Minvoltage:
-          notify_user(camera)
-        #print('download videos for ' + camera)
-        old_dld = "{}/{}".format(Download_root, camera)
-        test_dld = "{}/{}/{}".format(Download_root, 'test', camera)
-        download_dir = "{}/{}/{}".format(Download_root, "download", camera)
-        os.makedirs(old_dld, exist_ok = True)
-        os.makedirs(download_dir, exist_ok = True)
+        dumper = camdump(struct)
+        print("{:20.20s} : {}".format("Name", camera))
+        for key in sorted(dumper.keys()):
+          if key != "name":
+            print("{:20.20s} : {}".format(key, dumper[key]))
+        if bool(dumper['motion_enabled']) != True:
+          print("MOTION DETECTION DISABLED")
+        if int(dumper['battery_voltage']) < 130:
+          print("BATTERY VOLTAGE LOW")
+        print()
 
-        info('before download for {}'.format(camera))
-        instance.download_videos(camera, Since, download_dir)
-        info('after  download')
-        #download_videos(blink, camera, Since, old_dld)
-
-        modify_videos(download_dir, old_dld)
-
-    info('Finished')
 
 main()
 
