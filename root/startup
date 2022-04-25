@@ -1,8 +1,15 @@
+test -e /var/run/utmp || bash /etc/init.d/utmp
+
 mkdir /run/sendsigs.omit.d 2>/dev/null
+
+( test -d /var/run && test -d /var/run/dbus ) || mkdir -p /var/run/dbus
+
+badpidfile=/run/rpc.statd.pid
+if test -f $badpidfile; then chmod 744 $badpidfile;fi
 
 servicefile=/tmp/seO$$
 serviceerrs=/tmp/seE$$
-mylist="cron ssh postfix procps rpcbind nfs-common rsync vncserver"
+mylist="dbus cron ssh postfix rpcbind nfs-common rsync vncserver procps "
 
 service --status-all > $servicefile 2>$serviceerrs
 
@@ -40,4 +47,4 @@ cat /mnt/c/windows/System32/drivers/etc/hosts  | sed -e "s/172.[0-9]*.[0-9]*.[0-
 hostname ubu-george
 apachectl start
 bash /etc/init.d/git start
-service nfs-common restart
+# service nfs-common restart
