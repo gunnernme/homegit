@@ -1,0 +1,3 @@
+LABEL=cloudimg-rootfs	/	 ext4	discard,errors=remount-ro	0 1
+wdbackup2:/nfs/cameras /mnt/z nfs rw 0 0 
+wdmycloud:/nfs/streetcam /mnt/y nfs rw 0 0
