@@ -1,0 +1,4 @@
+cs()
+    {
+    cleartool setcs '\\view\eolson_main\SBR\clearcase\branch\'$1.txt
+    }

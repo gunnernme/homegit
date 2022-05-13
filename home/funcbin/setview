@@ -1,0 +1,32 @@
+function setview
+    {
+    setview_version='$Header: /cygdrive/c/Documents\040and\040Settings/a361273/funcbin/RCS/setview,v 1.6 2004/12/07 18:23:46 a361273 Exp a361273 $';
+    system=$(uname -s)
+
+    case $system in
+    	CYG*) 	view=$(viewdrive "$1" $2)
+		viewloc="$view"
+		vobloc="$view/$1"
+		string="cleartool mount \"\\$1\""
+		;;
+
+	*)    	view=$(myviews |grep "$1.*$2" |cut -c3-| awk '{print $1;}') 
+		viewloc="/view/$view"
+		vobloc="/view/$view/vobs/$1"
+		string="cleartool mount /vobs/$1"
+		;;
+    esac
+	
+
+    if test ! -d "$viewloc"
+    then
+	cleartool startview "$view"
+    fi
+
+    if test ! -d "$vobloc"
+    then
+	eval $string
+    fi
+
+    cd $vobloc
+    }
