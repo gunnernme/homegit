@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+
+$pagename="index.html";
+
+chdir("/tmp");
+system "wget http://192.168.1.1/$pagename >/dev/null 2>&1";
+open LI, "<$pagename";
+LINE:
+while (<LI>)
+    {
+    ($wanip ) =($_ =~ /Up.*dw\(\'([^\']+)\'/) if ($_ =~ /Up.*dw\(\'([^\']+)\'/);
+    next LINE if ($wanip =~ /^255/);
+    }
+print $wanip ."\n"  if ($wanip);
+close(LI);
+unlink("$pagename");
