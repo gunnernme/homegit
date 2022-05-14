@@ -1,0 +1,3 @@
+x=$(ipconfig /all | egrep "IP(v4)? Add.*192.168.1\." | cut -d: -f2|cut -d'(' -f1 |cut -c2-|tr -d '\015')
+echo $x
+

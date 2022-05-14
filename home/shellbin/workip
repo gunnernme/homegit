@@ -1,0 +1,14 @@
+u=$(uname -s)
+case $u in
+	Cy*|CY*|cy*|MS*)
+x=$(ipconfig /all | egrep "IP.* Add.*(172.2[589]\.|10\.250\.4\.)" |grep -v 172.28.15 | cut -d: -f2|cut -c2-|cut -d'(' -f1)
+;;
+	Linux)
+	x=$(/sbin/ifconfig -a|grep "inet addr:172.2[589]\."|cut -d':' -f2|cut -d' ' -f1)
+	;;
+
+	*)
+	x=$(ifconfig -a|grep "inet 172.2[589]\."|cut -d' ' -f2)
+	;;
+esac
+echo $x

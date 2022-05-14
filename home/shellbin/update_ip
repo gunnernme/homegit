@@ -1,0 +1,4 @@
+PATH=$HOME/perlbin:$PATH
+IPLOCAL=`getipa`
+export IPLOCAL
+sudo sh /var/www/92web
