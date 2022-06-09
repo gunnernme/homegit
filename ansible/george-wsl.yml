@@ -14,7 +14,7 @@
         - procps
         - postfix
         - pylint
-        - python3.9
+          #- python3.9
         - python3-pip
         - python3-virtualenv
         - subversion
@@ -23,7 +23,8 @@
         - sshpass
         - xfce4 
         - xfce4-goodies
-        - tightvncserver
+        - x11vnc
+          #- tightvncserver
 
       piplist:
         - flask
