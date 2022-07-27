@@ -1,5 +1,7 @@
 import os
 import sys
+import glob
+from shutil import copy
 from blinkpy.blinkpy import Blink
 from blinkpy.auth import Auth
 from blinkpy.helpers.util import json_load
@@ -208,9 +210,23 @@ def camdump(cam):
 def notify_user(camera):
     pass
 
+def link_latest(dir, where, camera):
+    #print("Find latest in '" + dir + "'")
+    list_of_files = glob.glob(dir + '/*/*') 
+    latest_dir = max(list_of_files, key=os.path.getmtime)
+    list_of_files = glob.glob(latest_dir + '/*') 
+    latest_file = max(list_of_files, key=os.path.getmtime)
+    new_link = where + "/" + camera +  ".mp4" 
+    #print("copy '" +  latest_file + "' to '" + new_link + "'" )
+    #os.symlink(latest_file, new_link)
+    copy(latest_file, new_link)
+
 def main():
     instance = Netblink(Credsfile)
     cam_list = instance.cameras()
+    home_dir = os.environ.get('HOME', "/tmp")
+    link_dir = os.environ.get('LINK_DIR', home_dir + "/" + "Desktop");
+    desktop = home_dir + "/Desktop"
     Minvoltage = 125
 
     for struct in cam_list:
@@ -230,6 +246,7 @@ def main():
         #download_videos(blink, camera, Since, old_dld)
 
         modify_videos(download_dir, old_dld)
+        link_latest(old_dld, desktop, camera)
 
     info('Finished')
 
