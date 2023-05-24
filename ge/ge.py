@@ -3,13 +3,28 @@ import pprint
 from urllib.request import urlopen
 import json
 
-api_url = "https://ttp.cbp.dhs.gov/schedulerapi/slots"
+scheduler_api_url = "https://ttp.cbp.dhs.gov/schedulerapi"
+scheduler_api_endpoints = {
+        'locations' : "/slots/locations",
+        'locationids' : "/slots/locationids",
+        'sites' : "/sites",
+        'aslocations' : "/slots/asLocations",
+        'location': "/locations"
+        }
 
-response = requests.get(api_url)
+api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + "?limit=100"
+print(api_url)
 
-out = response.json()
+#response = requests.get(api_url)
 
-pprint.PrettyPrinter(indent=4).pprint(out)
+#out = response.json()
 
+#pprint.PrettyPrinter(indent=4).pprint(out)
+
+with urlopen(api_url) as resp:
+    pprint.PrettyPrinter(indent=4).pprint(json.load(resp))
+
+api_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/5444"  + "/slots"
+print(api_url)
 with urlopen(api_url) as resp:
     pprint.PrettyPrinter(indent=4).pprint(json.load(resp))
