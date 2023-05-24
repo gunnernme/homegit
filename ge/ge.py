@@ -15,16 +15,24 @@ scheduler_api_endpoints = {
 api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + "?limit=100"
 print(api_url)
 
-#response = requests.get(api_url)
 
-#out = response.json()
+out = requests.get(api_url).json()
 
 #pprint.PrettyPrinter(indent=4).pprint(out)
 
-with urlopen(api_url) as resp:
-    pprint.PrettyPrinter(indent=4).pprint(json.load(resp))
+#arr=[]
+#with urlopen(api_url) as resp:
+        #for item in resp:
+            #pprint.PrettyPrinter(indent=4).pprint(item)
+            #itemd = { 'id': item['id'], 'city': item['city'], state: item['state'] }
+            #arr.push(itemd)
+    #pprint.PrettyPrinter(indent=4).pprint(json.load(resp))
+for loc in out:
+    print("{}, {}: {} ({})".format(
+        loc['city'], loc['state'], loc['postalCode'], loc['name'].strip(), loc['id']))
+#pprint.PrettyPrinter(indent=4).pprint(json.load(arr))
 
-api_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/5444"  + "/slots"
-print(api_url)
-with urlopen(api_url) as resp:
-    pprint.PrettyPrinter(indent=4).pprint(json.load(resp))
+#api_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/5444"  + "/slots"
+#print(api_url)
+#with urlopen(api_url) as resp:
+    #pprint.PrettyPrinter(indent=4).pprint(json.load(resp))
