@@ -6,11 +6,16 @@ import json
 from haversine import haversine, Unit
 import zipcodes
 from datetime import datetime,timedelta
+import config
 
-days_in_future = 120
+days_in_future = config.days_in_future
+start_zip = config.start_zip
 
-if sys.argv[1]:
+if len(sys.argv) > 1:
     days_in_future = int(sys.argv[1])
+
+if len(sys.argv) > 2:
+    start_zip = sys.argv[2]
 
 start_time = datetime.now()
 start_time.replace(microsecond=0)
@@ -36,11 +41,11 @@ scheduler_api_endpoints = {
         'aslocations' : "/slots/asLocations",
         'location': "/locations"
         }
-asloc_api_url_params = "?limit=200"
+asloc_api_url_params = "?limit=" + str(config.max_asloc)
 slots_api_url_params = "?minimum=1&filterTimestampBy=before&timestamp={timestamp}&serviceName=Global%20Entry".format(timestamp=locations_end_fmt)
 
 api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + asloc_api_url_params
-api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + slots_api_url_params
+#api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + slots_api_url_params
 print(api_url)
 
 nextslot_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/{id}/slots" + "?startTimestamp={start}" + "&endTimestamp={end}"
@@ -51,10 +56,9 @@ nextslot_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/{id}/
             #itemd = { 'id': item['id'], 'city': item['city'], state: item['state'] }
             #arr.push(itemd)
 
-peabodyzip = '01960'
-peabodylat = (zipcodes.matching(peabodyzip)[0]['lat'])
-peabodylong = (zipcodes.matching(peabodyzip)[0]['long'])
-peabodygeo = (float(peabodylat), float(peabodylong))
+startlat = (zipcodes.matching(start_zip)[0]['lat'])
+startlong = (zipcodes.matching(start_zip)[0]['long'])
+startgeo = (float(startlat), float(startlong))
 
 
 out = requests.get(api_url).json()
@@ -71,7 +75,7 @@ for item in out:
             newitem['lat'] = test[0]['lat']
             newitem['long'] = test[0]['long']
             newitem['geo'] = (float(item['lat']), float(newitem['long']))
-            newitem['dist'] = int(haversine(item['geo'], peabodygeo, unit=Unit.MILES))
+            newitem['dist'] = int(haversine(item['geo'], startgeo, unit=Unit.MILES))
             newarr.append(newitem)
 
 sout = sorted(newarr, key=lambda item: (item['dist']))
@@ -87,7 +91,7 @@ for item in sout[0:10]:
     else:
         item['slots'].append("none")
         item['slotslen'] = 0
-    print("{city}, {state} - {dist} mi: {zip} '{name}' ({id}) = [{slotct}, next={slot}]".format(
+    print("{city}, {state} {zip} - {dist} mi: '{name}' ({id}) = [{slotct}, next={slot}]".format(
         city=item['city'], state=item['state'], dist=item['dist'], zip=item['postalCode'], name=item['name'].strip(), id=item['id'], slotct=item['slotslen'], slot=item['slots']))
 
 
