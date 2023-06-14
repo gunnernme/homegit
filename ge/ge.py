@@ -11,6 +11,9 @@ import config
 days_in_future = config.days_in_future
 start_zip = config.start_zip
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 if len(sys.argv) > 1:
     days_in_future = int(sys.argv[1])
 
@@ -46,9 +49,11 @@ slots_api_url_params = "?minimum=1&filterTimestampBy=before&timestamp={timestamp
 
 api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + asloc_api_url_params
 #api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + slots_api_url_params
-print(api_url)
+#print(api_url)
 
 nextslot_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/{id}/slots" + "?startTimestamp={start}" + "&endTimestamp={end}"
+printer = pprint.PrettyPrinter(indent=4)
+prt = printer.pprint
 
 #with urlopen(api_url) as resp:
         #for item in resp:
@@ -61,12 +66,20 @@ startlong = (zipcodes.matching(start_zip)[0]['long'])
 startgeo = (float(startlat), float(startlong))
 
 
-out = requests.get(api_url).json()
-print("There are {ct} locations returned".format(ct=len(out)))
+result = requests.get(api_url)
+
+try:
+    out = result.json()
+except ValueError:
+    eprint("Bad response to http request GET: '{url}'".format(url=api_url))
+    exit(1)
+
+if len(out) >= int(config.max_asloc):
+    print("There are {ct} locations returned".format(ct=len(out)))
 
 newarr = []
 for item in out:
-    # pprint.PrettyPrinter(indent=4).pprint(item)
+    # prt(item)
     if item['countryCode'] == 'US':
         newitem = item
         zip = item['postalCode'][0:5]
@@ -81,6 +94,7 @@ for item in out:
 sout = sorted(newarr, key=lambda item: (item['dist']))
 
 #for item in sout:
+print("Before {}:".format(end_time.strftime(end_day_fmt)))
 for item in sout[0:10]:
     url = nextslot_url.format(id=item['id'], start=slots_start_fmt, end=slots_end_fmt)
     item['slots'] = []
@@ -91,7 +105,7 @@ for item in sout[0:10]:
     else:
         item['slots'].append("none")
         item['slotslen'] = 0
-    print("{city}, {state} {zip} - {dist} mi: '{name}' ({id}) = [{slotct}, next={slot}]".format(
+    print("{dist:4d}mi {city}, {state}: '{name}' ({id}) = [{slotct}, next={slot}]".format(
         city=item['city'], state=item['state'], dist=item['dist'], zip=item['postalCode'], name=item['name'].strip(), id=item['id'], slotct=item['slotslen'], slot=item['slots']))
 
 
