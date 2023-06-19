@@ -50,6 +50,7 @@ slots_api_url_params = "?minimum=1&filterTimestampBy=before&timestamp={timestamp
 api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + asloc_api_url_params
 #api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + slots_api_url_params
 #print(api_url)
+api_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/"
 
 nextslot_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/{id}/slots" + "?startTimestamp={start}" + "&endTimestamp={end}"
 printer = pprint.PrettyPrinter(indent=4)
@@ -61,11 +62,17 @@ prt = printer.pprint
             #itemd = { 'id': item['id'], 'city': item['city'], state: item['state'] }
             #arr.push(itemd)
 
-startlat = (zipcodes.matching(start_zip)[0]['lat'])
-startlong = (zipcodes.matching(start_zip)[0]['long'])
+try:
+    startlat = (zipcodes.matching(start_zip)[0]['lat'])
+    startlong = (zipcodes.matching(start_zip)[0]['long'])
+except IndexError:
+    eprint("Bad zipcode")
+    exit(1)
+
 startgeo = (float(startlat), float(startlong))
 
 
+#print(api_url)
 result = requests.get(api_url)
 
 try:
@@ -80,7 +87,7 @@ if len(out) >= int(config.max_asloc):
 newarr = []
 for item in out:
     # prt(item)
-    if item['countryCode'] == 'US':
+    if item['countryCode'] == 'US' and item['postalCode']:
         newitem = item
         zip = item['postalCode'][0:5]
         test = zipcodes.matching(zip)
@@ -95,18 +102,60 @@ sout = sorted(newarr, key=lambda item: (item['dist']))
 
 #for item in sout:
 print("Before {}:".format(end_time.strftime(end_day_fmt)))
-for item in sout[0:10]:
+out_cnt = 0
+
+for item in sout:
+    pending = 0
+    remote = 0
     url = nextslot_url.format(id=item['id'], start=slots_start_fmt, end=slots_end_fmt)
     item['slots'] = []
+    item['slotslen'] = 0
+    #print(url)
     slots = requests.get(url).json()
     if slots:
-        item['slots'].append(slots[0]['timestamp'])
-        item['slotslen'] = len(slots)
+        slots = sorted(slots, key=lambda i: (i['timestamp']))
+        pending = 0
+        remote = 0
+        for ts in slots:
+            if str(ts['active']) != str(0):
+                for i in range(ts['active']):
+                    item['slots'].append(ts['timestamp'])
+                    item['slotslen'] = item['slotslen'] + 1
+            if str(ts['pending']).lower() != str(0):
+                pending = pending + 1
+            if str(ts['remote']).lower() != 'false':
+                remote = remote + 1
+        item['lastslot'] = slots[len(slots)-1]['timestamp']
     else:
-        item['slots'].append("none")
         item['slotslen'] = 0
-    print("{dist:4d}mi {city}, {state}: '{name}' ({id}) = [{slotct}, next={slot}]".format(
-        city=item['city'], state=item['state'], dist=item['dist'], zip=item['postalCode'], name=item['name'].strip(), id=item['id'], slotct=item['slotslen'], slot=item['slots']))
+        continue
+
+    if (item['slotslen'] == 0):
+        item['slots'].append("none")
+    else:
+        item['slots'] = item['slots'][0:config.max_slots]
+
+    out_cnt = out_cnt + 1
+
+    #print("{dist:4d}mi {city}, {state}: '{name}' ({id}) = [{slotct}, last={last}, next={slot}]".format(
+        #city=item['city'], state=item['state'], dist=item['dist'], zip=item['postalCode'], name=item['name'].strip(), id=item['id'], slotct=item['slotslen'], last=item['lastslot'], slot=item['slots']))
+    
+    print("The {id}-{name} in {city}, {state} is {dist} miles away from {startzip}.".format(name=item['name'], dist=item['dist'], city=item['city'], state=item['state'], startzip=config.start_zip, id=item['id']))
+    if pending:
+        print("There were {pen} pending slots".format(pen = pending))
+    if remote:
+        print("There were {rem} remote slots".format(rem = remote))
+    if item['slotslen'] == 0:
+        print("\tnone\t\t{lastslot}".format(slotcount=item['slotslen'], lastslot=item['lastslot']) )
+    else:
+        for i in range(0,len(item['slots'])):
+            print("\t{openslot}".format(openslot=item['slots'][i]))
+        print("\t\t\t{lastslot}".format(lastslot=item['lastslot']) )
+
+
+        #print("\tThere are {slotcount} slots available and slots have been entered up until {lastslot}.  The next available open slot is {openslot}.".format(name=item['name'], dist=item['dist'], startzip=config.start_zip, slotcount=item['slotslen'], lastslot=item['lastslot'], openslot=item['slots'], city=item['city'], state=item['state']))
+    if out_cnt > config.max_out:
+        exit(0)
 
 
 
