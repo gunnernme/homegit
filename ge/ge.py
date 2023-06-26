@@ -51,6 +51,7 @@ api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + asloc_api
 #api_url = scheduler_api_url + scheduler_api_endpoints['aslocations'] + slots_api_url_params
 #print(api_url)
 api_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/"
+print(api_url)
 
 nextslot_url = scheduler_api_url + scheduler_api_endpoints['location'] + "/{id}/slots" + "?startTimestamp={start}" + "&endTimestamp={end}"
 printer = pprint.PrettyPrinter(indent=4)
@@ -105,6 +106,9 @@ print("Before {}:".format(end_time.strftime(end_day_fmt)))
 out_cnt = 0
 
 for item in sout:
+    if item['dist'] > config.max_miles:
+        exit(0)
+
     pending = 0
     remote = 0
     url = nextslot_url.format(id=item['id'], start=slots_start_fmt, end=slots_end_fmt)
@@ -137,9 +141,6 @@ for item in sout:
 
     out_cnt = out_cnt + 1
 
-    #print("{dist:4d}mi {city}, {state}: '{name}' ({id}) = [{slotct}, last={last}, next={slot}]".format(
-        #city=item['city'], state=item['state'], dist=item['dist'], zip=item['postalCode'], name=item['name'].strip(), id=item['id'], slotct=item['slotslen'], last=item['lastslot'], slot=item['slots']))
-    
     print("The {id}-{name} in {city}, {state} is {dist} miles away from {startzip}.".format(name=item['name'], dist=item['dist'], city=item['city'], state=item['state'], startzip=config.start_zip, id=item['id']))
     if pending:
         print("There were {pen} pending slots".format(pen = pending))
@@ -153,7 +154,6 @@ for item in sout:
         print("\t\t\t{lastslot}".format(lastslot=item['lastslot']) )
 
 
-        #print("\tThere are {slotcount} slots available and slots have been entered up until {lastslot}.  The next available open slot is {openslot}.".format(name=item['name'], dist=item['dist'], startzip=config.start_zip, slotcount=item['slotslen'], lastslot=item['lastslot'], openslot=item['slots'], city=item['city'], state=item['state']))
     if out_cnt > config.max_out:
         exit(0)
 
