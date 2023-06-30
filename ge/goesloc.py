@@ -11,6 +11,18 @@ from pprint import PrettyPrinter, pprint
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+def name(loc):
+    string = ""
+    if isinstance(loc, list):
+        for item in loc:
+            if string != "":
+                string += ","
+            string += "name={locname}".format(locname=item['name'])
+    else:
+        string = loc['name']
+
+    return string
+
 class Goesloc:
     def __init__(self):
         self.goesdict = []
@@ -71,13 +83,13 @@ class Goesloc:
 
         for type in kwargs:
             value = kwargs[type]
-            eprint("Type " + type + " value " + value)
+            #eprint("Type " + type + " value " + value)
             arr.append((type, value))
 
         (type, value) = arr[0]
 
         reg = re.compile(value)
-        eprint("Type " + type + " value " + value)
+        #eprint("Type " + type + " value " + value)
         for i in self.goesdict:
             if reg.match(i[type]):
                 result.append(i)
@@ -90,17 +102,18 @@ class Goesloc:
 
         for type in kwargs:
             value = kwargs[type]
-            eprint("Type " + type + " value " + value)
+            #eprint("Type " + type + " value " + value)
             arr.append((type, value))
 
         (type, value) = arr[0]
 
-        eprint("Type " + type + " value " + value)
+        #eprint("Type " + type + " value " + value)
         for i in self.goesdict:
             if str(i[type]) == str(value):
                 result.append(i)
 
         return result
+
 
 
     def find_or_add_location(self, key):
@@ -112,7 +125,8 @@ class Goesloc:
             arr = self.regex_find(skey)
         else:
             arr = self.find_by_field(name=skey)
-        self.udump(arr)
+        #self.udump(arr)
+        return arr
         if arr:
             location = arr[0]
 
@@ -130,14 +144,20 @@ class Goesloc:
 # ---------------
 x = Goesloc()
 
-loc = x.search_location('5003')
+#loc = x.search_location('5003')
+#print("name={name}".format(name=name(loc)))
+#x.udump(loc)
+#loc = x.search_location('.*erb.*')
+#print("name={name}".format(name=name(loc)))
+#x.udump(loc)
+#loc = x.search_location('.*radley.*port.*')
+#print("name={name}".format(name=name(loc)))
+#x.udump(loc)
+loc = x.search_location('.*radley.*')
+print(name(loc))
 x.udump(loc)
-loc = x.search_location('.*erb.*')
-x.udump(loc)
-loc = x.search_location('.*radley.*port.*')
-x.udump(loc)
-loc = x.search_location('88888')
-if loc is not None:
-    x.udump(loc)
-else:
-    print("not foudn")
+#loc = x.search_location('88888')
+#if loc is not None:
+    #x.udump(loc)
+#else:
+    #print("not foudn")

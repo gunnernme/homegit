@@ -95,7 +95,7 @@ for item in out:
         if test:
             newitem['lat'] = test[0]['lat']
             newitem['long'] = test[0]['long']
-            newitem['geo'] = (float(item['lat']), float(newitem['long']))
+            newitem['geo'] = (float(newitem['lat']), float(newitem['long']))
             newitem['dist'] = int(haversine(item['geo'], startgeo, unit=Unit.MILES))
             newarr.append(newitem)
 
@@ -141,7 +141,7 @@ for item in sout:
 
     out_cnt = out_cnt + 1
 
-    print("The {id}-{name} in {city}, {state} is {dist} miles away from {startzip}.".format(name=item['name'], dist=item['dist'], city=item['city'], state=item['state'], startzip=config.start_zip, id=item['id']))
+    print("The {id}-{name} in {city}, {state} is {dist} miles away from {startzip}.  It has {slotslen} available at this time.".format(name=item['name'], dist=item['dist'], city=item['city'], state=item['state'], startzip=config.start_zip, id=item['id'], slotslen=item['slotslen']))
     if pending:
         print("There were {pen} pending slots".format(pen = pending))
     if remote:
